@@ -27,10 +27,7 @@ def tohex(val, nbits):
     """Utility to convert (signed) integer to hex."""
     return hex((val + (1 << nbits)) % (1 << nbits))
 
-def main():
-    """Utility core."""
-    if len(sys.argv) != 3:
-        sys.exit('Missing params [win10compressed.pf] [win10decompressed.pf]')
+def decompress(data):
 
     NULL = ctypes.POINTER(ctypes.c_uint)()
     SIZE_T = ctypes.c_uint
@@ -48,7 +45,7 @@ def main():
     RtlGetCompressionWorkSpaceSize = \
         ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize
 
-    with open(sys.argv[1], 'rb') as fin:
+    with open(data, 'rb') as fin:
         header = fin.read(8)
         compressed = fin.read()
 
@@ -101,12 +98,7 @@ def main():
                 tohex(ntstatus, 32)))
 
         if ntFinalUncompressedSize.value != decompressed_size:
-            print 'Decompressed with a different size than original!'
+            print ('Decompressed with a different size than original!')
 
-        with open(sys.argv[2], 'wb') as fout:
-            fout.write(bytearray(ntDecompressed))
+        return bytearray(ntDecompressed)
 
-        print 'Lucky man, you have your prefetch file ready to be parsed!'
-
-if __name__ == "__main__":
-    main()
